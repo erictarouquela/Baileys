@@ -15,17 +15,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ---------------------------------------------------------------------------
 # Build Baileys (parent project)
 # ---------------------------------------------------------------------------
-# Copy everything needed for the build -- the "prepare" script in package.json
-# runs "npm run build" (tsc), so source files must be present during yarn install
-COPY package.json yarn.lock .yarnrc.yml tsconfig.json tsconfig.build.json ./
+# Copy all files needed for the build
+COPY package.json ./
 COPY src/ ./src/
 COPY WAProto/ ./WAProto/
+COPY tsconfig.json tsconfig.build.json ./
 
-RUN corepack enable \
-	&& corepack prepare yarn@4.9.2 --activate \
-	&& yarn --version \
-	&& yarn install \
-	&& yarn build
+# Use npm instead of yarn -- npm install does NOT run the "prepare" script,
+# avoiding the build failure. We run the build explicitly afterwards.
+RUN npm install \
+	&& npm run build
 
 # ---------------------------------------------------------------------------
 # Build Web Panel
@@ -37,7 +36,7 @@ COPY web-panel/src/ ./src/
 RUN npm run build
 
 # Copy static frontend files to lib output (not compiled by tsc)
-COPY web-panel/src/public ./web-panel/lib/public
+COPY web-panel/src/public ./lib/public
 
 WORKDIR /app
 

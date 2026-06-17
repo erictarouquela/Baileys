@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Build Baileys (parent project)
 # ---------------------------------------------------------------------------
 # Copy all files needed for the build
-COPY package.json ./
+COPY package.json engine-requirements.js ./
 COPY src/ ./src/
 COPY WAProto/ ./WAProto/
 COPY tsconfig.json tsconfig.build.json ./

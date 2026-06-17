@@ -219,7 +219,8 @@ export class InstanceManager {
 		const { version } = await fetchLatestBaileysVersion()
 		logger.info({ version: version.join('.'), instance: id }, 'starting socket')
 
-		const msgRetryCounterCache = new NodeCache()
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const msgRetryCounterCache = new NodeCache() as any
 
 		const sock = makeWASocket({
 			version,

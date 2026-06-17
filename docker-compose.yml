@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  baileys-panel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: baileys-panel
+    ports:
+      - "3000:3000"
+    volumes:
+      - baileys-data:/app/data
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - INSTANCES_DIR=/app/data/instances
+      - PORT=3000
+
+volumes:
+  baileys-data:
+    driver: local

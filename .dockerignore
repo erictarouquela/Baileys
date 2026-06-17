@@ -1,0 +1,15 @@
+node_modules
+lib
+web-panel/node_modules
+web-panel/lib
+data
+.git
+.github
+docs
+__tests__
+*.md
+!CLAUDE.md
+!AGENTS.md
+.env
+*.log
+.DS_Store

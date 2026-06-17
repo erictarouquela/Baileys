@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baileys Panel</title>
+<style>
+/* ------------------------------------------------------------------ */
+/* Fonts                                                               */
+/* ------------------------------------------------------------------ */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+/* ------------------------------------------------------------------ */
+/* Variables                                                           */
+/* ------------------------------------------------------------------ */
+:root {
+  --bg-root: #090c10;
+  --bg-surface: #11161d;
+  --bg-card: #161c25;
+  --bg-card-hover: #1a202a;
+  --bg-input: #0d1117;
+  --bg-modal-overlay: rgba(0,0,0,0.72);
+  --border-subtle: #1e2835;
+  --border-active: #2d3b4f;
+  --text-primary: #e8edf3;
+  --text-secondary: #8b95a5;
+  --text-muted: #58626f;
+  --accent: #2dd4bf;
+  --accent-dim: #0f766e;
+  --accent-glow: rgba(45,212,191,0.15);
+  --status-open: #22c55e;
+  --status-open-bg: rgba(34,197,94,0.12);
+  --status-connecting: #f59e0b;
+  --status-connecting-bg: rgba(245,158,11,0.12);
+  --status-closed: #ef4444;
+  --status-closed-bg: rgba(239,68,68,0.12);
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.4), 0 0 0 1px var(--border-subtle);
+  --shadow-glow: 0 0 24px var(--accent-glow);
+  --transition-fast: 150ms ease;
+  --transition-smooth: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ------------------------------------------------------------------ */
+/* Reset & Base                                                        */
+/* ------------------------------------------------------------------ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-root);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* Subtle grid texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 70%);
+}
+
+/* ------------------------------------------------------------------ */
+/* Layout                                                              */
+/* ------------------------------------------------------------------ */
+.app { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* ------------------------------------------------------------------ */
+/* Header                                                              */
+/* ------------------------------------------------------------------ */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0 32px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.header-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--accent-dim), var(--accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.header-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.header-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 1px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  outline-offset: 2px;
+}
+
+.btn:focus-visible { outline: 2px solid var(--accent); }
+
+.btn-primary {
+  background: var(--accent);
+  color: #0a0f14;
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+.btn-primary:hover { background: #5eeadb; transform: translateY(-1px); }
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+.btn-secondary:hover { background: var(--bg-card-hover); border-color: var(--border-active); }
+
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid rgba(239,68,68,0.3);
+}
+.btn-danger:hover { background: rgba(239,68,68,0.1); border-color: var(--danger); }
+
+.btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+
+/* ------------------------------------------------------------------ */
+/* Instance Grid                                                       */
+/* ------------------------------------------------------------------ */
+.instance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-active);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-bottom: 20px;
+  color: var(--text-muted);
+}
+
+.empty-state-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.empty-state-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 300px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Instance Card                                                       */
+/* ------------------------------------------------------------------ */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  transition: all var(--transition-smooth);
+  animation: cardIn 0.4s ease both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card:hover { border-color: var(--border-active); box-shadow: var(--shadow-card); }
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+}
+
+.card-id {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+/* Status badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.status-badge::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-open { background: var(--status-open-bg); color: var(--status-open); }
+.status-open::before { background: var(--status-open); box-shadow: 0 0 6px var(--status-open); }
+
+.status-connecting { background: var(--status-connecting-bg); color: var(--status-connecting); }
+.status-connecting::before {
+  background: var(--status-connecting);
+  box-shadow: 0 0 6px var(--status-connecting);
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+
+.status-disconnected,
+.status-close { background: var(--status-closed-bg); color: var(--status-closed); }
+.status-disconnected::before,
+.status-close::before { background: var(--status-closed); }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* QR area */
+.card-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 20px 16px;
+  gap: 10px;
+}
+
+.card-qr img {
+  border-radius: var(--radius-md);
+  background: #fff;
+  padding: 8px;
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+}
+
+.qr-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+/* Pairing code */
+.card-pairing {
+  margin: 0 20px 12px;
+  padding: 10px 16px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--accent-dim);
+  text-align: center;
+}
+
+.pairing-code-value {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.15em;
+}
+
+.pairing-code-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+/* Error message */
+.card-error {
+  margin: 0 20px 12px;
+  padding: 10px 14px;
+  background: var(--status-closed-bg);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--danger);
+  font-size: 0.8rem;
+  color: #fca5a5;
+  font-family: var(--font-mono);
+  word-break: break-word;
+}
+
+/* Card actions */
+.card-actions {
+  display: flex;
+  gap: 8px;
+  padding: 14px 20px 18px;
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------------ */
+/* Modal                                                               */
+/* ------------------------------------------------------------------ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-modal-overlay);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  animation: modalIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px 0;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+.modal-close:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+.modal-body { padding: 20px 24px 24px; }
+
+.form-group { margin-bottom: 18px; }
+
+.form-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.form-input:focus { border-color: var(--accent); }
+
+.form-input::placeholder { color: var(--text-muted); font-family: var(--font-body); font-size: 0.8rem; }
+
+.form-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.checkbox-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* Delete confirm specifics */
+.delete-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--status-closed-bg);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+
+.delete-warning-icon { font-size: 20px; flex-shrink: 0; }
+
+.delete-warning-text {
+  font-size: 0.82rem;
+  color: #fca5a5;
+  line-height: 1.5;
+}
+
+.delete-warning-text strong { color: #f87171; }
+
+/* ------------------------------------------------------------------ */
+/* Toast                                                               */
+/* ------------------------------------------------------------------ */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  animation: slideIn 0.3s ease;
+  max-width: 360px;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.toast-success { border-left: 3px solid var(--status-open); }
+.toast-error { border-left: 3px solid var(--danger); }
+.toast-info { border-left: 3px solid var(--accent); }
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+@media (max-width: 640px) {
+  .app { padding: 0 16px; }
+  .header { padding: 20px 0 24px; margin-bottom: 24px; }
+  .instance-grid { grid-template-columns: 1fr; }
+  .card-qr img { width: 140px; height: 140px; }
+  .modal { margin: 0 8px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-brand">
+      <div class="header-logo">⚡</div>
+      <div>
+        <div class="header-title">Baileys Panel</div>
+        <div class="header-subtitle">WhatsApp Connection Manager</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-add" onclick="showAddModal()">
+      <span>+</span> Add Instance
+    </button>
+  </header>
+
+  <!-- Instance Grid -->
+  <div class="instance-grid" id="instance-grid">
+    <div class="empty-state">
+      <div class="empty-state-icon">📱</div>
+      <div class="empty-state-title">No instances yet</div>
+      <div class="empty-state-desc">Click "Add Instance" to connect your first WhatsApp number</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Add/Edit Instance Modal -->
+<div class="modal-overlay" id="modal-add" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Instance</div>
+      <button class="modal-close" onclick="hideModal('modal-add')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" for="input-phone">Phone Number</label>
+        <input
+          class="form-input"
+          id="input-phone"
+          type="text"
+          placeholder="Ex: 5511999999999"
+          autocomplete="off"
+        />
+        <div class="form-hint">Include country code (e.g., 55 for Brazil, 1 for US)</div>
+      </div>
+      <div class="form-group">
+        <label class="checkbox-group">
+          <input type="checkbox" id="input-pairing" />
+          <span class="checkbox-label">Use pairing code (enter phone in WhatsApp)</span>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="hideModal('modal-add')">Cancel</button>
+        <button class="btn btn-primary" id="btn-submit-add" onclick="handleAddInstance()">Connect</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="modal-delete" hidden>
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Delete Instance</div>
+      <button class="modal-close" onclick="hideModal('modal-delete')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="delete-warning">
+        <div class="delete-warning-icon">⚠️</div>
+        <div class="delete-warning-text">
+          This will <strong>permanently delete</strong> the instance <strong id="delete-instance-name">—</strong>
+          and all its authentication data. This action cannot be undone.
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="hideModal('modal-delete')">Cancel</button>
+        <button class="btn btn-danger" id="btn-confirm-delete">Delete Permanently</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+let instances = {};        // id -> InstanceInfo
+let deleteTargetId = null;
+let qrTimers = {};         // id -> intervalId
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+const api = async (path, opts) => {
+  const r = await fetch(path, opts);
+  const data = await r.json().catch(() => ({ error: `HTTP ${r.status}` }));
+  if (!r.ok) {
+    throw new Error(data.error || `Request failed (${r.status})`);
+  }
+  return data;
+};
+
+function statusClass(status) {
+  if (status === 'open') return 'status-open';
+  if (status === 'connecting') return 'status-connecting';
+  return 'status-disconnected';
+}
+
+function statusIcon(status) {
+  if (status === 'open') return '🟢';
+  if (status === 'connecting') return '🟡';
+  return '⚫';
+}
+
+// ---------------------------------------------------------------------------
+// Toast
+// ---------------------------------------------------------------------------
+function toast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  $('#toast-container').appendChild(el);
+  setTimeout(() => { el.remove(); }, 4000);
+}
+
+// ---------------------------------------------------------------------------
+// Modal
+// ---------------------------------------------------------------------------
+function showModal(id) { $('#' + id).hidden = false; }
+function hideModal(id) { $('#' + id).hidden = true; }
+
+function showAddModal() {
+  $('#input-phone').value = '';
+  $('#input-pairing').checked = false;
+  showModal('modal-add');
+  setTimeout(() => $('#input-phone').focus(), 100);
+}
+
+function showDeleteModal(id) {
+  deleteTargetId = id;
+  $('#delete-instance-name').textContent = id;
+  showModal('modal-delete');
+}
+
+// Close modals on overlay click
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal-overlay')) {
+    e.target.hidden = true;
+  }
+});
+
+// Close modals on Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    $$('.modal-overlay').forEach(m => { m.hidden = true; });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// QR Refresh
+// ---------------------------------------------------------------------------
+function startQrRefresh(id) {
+  stopQrRefresh(id);
+  const img = $(`[data-qr="${id}"]`);
+  if (!img) return;
+
+  let attempt = 0;
+  const refresh = () => {
+    const inst = instances[id];
+    if (!inst || !inst.qr) {
+      stopQrRefresh(id);
+      return;
+    }
+    img.src = `/api/instances/${encodeURIComponent(id)}/qr-image?t=${Date.now()}`;
+    attempt++;
+    if (attempt > 60) stopQrRefresh(id); // stop after 5 min
+  };
+  refresh();
+  qrTimers[id] = setInterval(refresh, 5000);
+}
+
+function stopQrRefresh(id) {
+  if (qrTimers[id]) {
+    clearInterval(qrTimers[id]);
+    delete qrTimers[id];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Render
+// ---------------------------------------------------------------------------
+function renderGrid() {
+  const grid = $('#instance-grid');
+  const ids = Object.keys(instances);
+
+  if (ids.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📱</div>
+        <div class="empty-state-title">No instances yet</div>
+        <div class="empty-state-desc">Click "Add Instance" to connect your first WhatsApp number</div>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = ids.map(id => {
+    const inst = instances[id];
+    const sc = statusClass(inst.status);
+    const hasQr = inst.status === 'connecting' && inst.qr;
+    const hasPairingCode = inst.status === 'connecting' && inst.pairingCode;
+    const hasError = inst.error && inst.status !== 'open' && inst.status !== 'connecting';
+
+    return `
+    <div class="card" style="animation-delay:${ids.indexOf(id) * 0.05}s" data-instance="${id}">
+      <div class="card-header">
+        <span class="card-id">📱 +${id}</span>
+        <span class="status-badge ${sc}">${inst.status}</span>
+      </div>
+      ${hasQr ? `
+        <div class="card-qr">
+          <img data-qr="${id}" src="/api/instances/${encodeURIComponent(id)}/qr-image" alt="QR Code" />
+          <span class="qr-label">Scan with WhatsApp</span>
+        </div>` : ''}
+      ${hasPairingCode ? `
+        <div class="card-pairing">
+          <div class="pairing-code-label">Pairing Code</div>
+          <div class="pairing-code-value">${inst.pairingCode}</div>
+        </div>` : ''}
+      ${hasError ? `
+        <div class="card-error">${inst.error}</div>` : ''}
+      <div class="card-actions">
+        ${inst.status === 'disconnected' || inst.status === 'close' ? `
+          <button class="btn btn-primary btn-sm" onclick="connectInstance('${id}')">Connect</button>
+        ` : ''}
+        ${inst.status === 'open' ? `
+          <button class="btn btn-secondary btn-sm" onclick="disconnectInstance('${id}')">Disconnect</button>
+        ` : ''}
+        ${inst.status === 'connecting' ? `
+          <button class="btn btn-secondary btn-sm" onclick="disconnectInstance('${id}')">Cancel</button>
+        ` : ''}
+        <button class="btn btn-danger btn-sm" onclick="showDeleteModal('${id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Start QR refresh for connecting instances
+  ids.forEach(id => {
+    if (instances[id]?.status === 'connecting' && instances[id]?.qr) {
+      startQrRefresh(id);
+    }
+  });
+}
+
+function updateInstance(id, data) {
+  instances[id] = { ...instances[id], ...data };
+  renderGrid();
+}
+
+function removeInstance(id) {
+  stopQrRefresh(id);
+  delete instances[id];
+  renderGrid();
+}
+
+// ---------------------------------------------------------------------------
+// Actions
+// ---------------------------------------------------------------------------
+async function connectInstance(id) {
+  try {
+    const res = await api(`/api/instances/${encodeURIComponent(id)}/connect`, { method: 'POST' });
+    updateInstance(id, res);
+    toast(`Connecting ${id}...`, 'info');
+  } catch (err) {
+    toast(`Failed to connect: ${err.message}`, 'error');
+  }
+}
+
+async function disconnectInstance(id) {
+  try {
+    const res = await api(`/api/instances/${encodeURIComponent(id)}/disconnect`, { method: 'POST' });
+    updateInstance(id, res);
+    toast(`Disconnected ${id}`, 'success');
+  } catch (err) {
+    toast(`Failed to disconnect: ${err.message}`, 'error');
+  }
+}
+
+async function deleteInstance(id) {
+  try {
+    await api(`/api/instances/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    removeInstance(id);
+    toast(`Deleted ${id}`, 'success');
+  } catch (err) {
+    toast(`Failed to delete: ${err.message}`, 'error');
+  }
+}
+
+async function handleAddInstance() {
+  const phone = $('#input-phone').value.trim();
+  if (!phone) {
+    toast('Please enter a phone number', 'error');
+    return;
+  }
+  // Basic sanitize
+  const id = phone.replace(/[^0-9]/g, '');
+  if (!id) {
+    toast('Invalid phone number', 'error');
+    return;
+  }
+
+  hideModal('modal-add');
+
+  const usePairing = $('#input-pairing').checked;
+  const body = usePairing ? JSON.stringify({ phoneNumber: id }) : '{}';
+
+  try {
+    const res = await api(`/api/instances/${encodeURIComponent(id)}/connect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body
+    });
+    updateInstance(id, res);
+    toast(`Starting connection for ${id}...`, 'info');
+  } catch (err) {
+    toast(`Failed: ${err.message}`, 'error');
+  }
+}
+
+// Delete confirm button
+$('#btn-confirm-delete').addEventListener('click', () => {
+  if (deleteTargetId) {
+    deleteInstance(deleteTargetId);
+    hideModal('modal-delete');
+  }
+});
+
+// Add instance on Enter key in phone input
+$('#input-phone').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleAddInstance();
+});
+
+// ---------------------------------------------------------------------------
+// WebSocket
+// ---------------------------------------------------------------------------
+function connectWs() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${proto}://${location.host}/ws`);
+
+  ws.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      switch (msg.event) {
+        case 'status-update':
+          updateInstance(msg.data.id, msg.data);
+          break;
+        case 'qr-update': {
+          const { id, qr } = msg.data;
+          if (instances[id]) {
+            instances[id].qr = qr;
+            renderGrid();
+          }
+          break;
+        }
+        case 'pairing-code': {
+          const { id, code } = msg.data;
+          if (instances[id]) {
+            instances[id].pairingCode = code;
+            renderGrid();
+          }
+          break;
+        }
+        case 'instance-deleted':
+          removeInstance(msg.data.id);
+          break;
+      }
+    } catch {}
+  };
+
+  ws.onclose = () => {
+    // Reconnect after delay
+    setTimeout(connectWs, 5000);
+  };
+
+  ws.onerror = () => {
+    ws.close();
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Init
+// ---------------------------------------------------------------------------
+async function init() {
+  try {
+    const list = await api('/api/instances');
+    if (Array.isArray(list)) {
+      for (const inst of list) {
+        instances[inst.id] = inst;
+      }
+      renderGrid();
+    }
+  } catch (err) {
+    toast('Failed to load instances', 'error');
+  }
+
+  connectWs();
+}
+
+init();
+</script>
+</body>
+</html>

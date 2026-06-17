@@ -3,977 +3,1328 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Baileys Panel</title>
+<title>Baileys — WhatsApp Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ------------------------------------------------------------------ */
-/* Fonts                                                               */
-/* ------------------------------------------------------------------ */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-
-/* ------------------------------------------------------------------ */
-/* Variables                                                           */
-/* ------------------------------------------------------------------ */
 :root {
-  --bg-root: #090c10;
-  --bg-surface: #11161d;
-  --bg-card: #161c25;
-  --bg-card-hover: #1a202a;
-  --bg-input: #0d1117;
-  --bg-modal-overlay: rgba(0,0,0,0.72);
-  --border-subtle: #1e2835;
-  --border-active: #2d3b4f;
-  --text-primary: #e8edf3;
-  --text-secondary: #8b95a5;
-  --text-muted: #58626f;
-  --accent: #2dd4bf;
-  --accent-dim: #0f766e;
-  --accent-glow: rgba(45,212,191,0.15);
-  --status-open: #22c55e;
-  --status-open-bg: rgba(34,197,94,0.12);
-  --status-connecting: #f59e0b;
-  --status-connecting-bg: rgba(245,158,11,0.12);
-  --status-closed: #ef4444;
-  --status-closed-bg: rgba(239,68,68,0.12);
-  --danger: #ef4444;
-  --danger-hover: #dc2626;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.4), 0 0 0 1px var(--border-subtle);
-  --shadow-glow: 0 0 24px var(--accent-glow);
-  --transition-fast: 150ms ease;
-  --transition-smooth: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --bg:        #030B14;
+  --bg-raised: #060F1C;
+  --bg-card:   rgba(255,255,255,0.025);
+  --bg-card-h: rgba(255,255,255,0.042);
+  --bg-input:  rgba(255,255,255,0.03);
+  --border:    rgba(255,255,255,0.07);
+  --border-h:  rgba(255,255,255,0.13);
+  --border-focus: rgba(34,197,94,0.5);
+
+  --txt:   #EDF2F8;
+  --txt-2: #8599AF;
+  --txt-3: #3E5068;
+
+  --green:       #22C55E;
+  --green-glow:  rgba(34,197,94,0.3);
+  --green-dim:   rgba(34,197,94,0.08);
+  --green-light: #4ADE80;
+
+  --amber:     #F59E0B;
+  --amber-dim: rgba(245,158,11,0.09);
+
+  --red:     #EF4444;
+  --red-dim: rgba(239,68,68,0.09);
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 24px;
+
+  --f-body: 'DM Sans', system-ui, sans-serif;
+  --f-disp: 'Syne', sans-serif;
+  --f-mono: 'JetBrains Mono', monospace;
+
+  --ease: cubic-bezier(0.23,1,0.32,1);
+  --ease-spring: cubic-bezier(0.34,1.56,0.64,1);
 }
 
-/* ------------------------------------------------------------------ */
-/* Reset & Base                                                        */
-/* ------------------------------------------------------------------ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; -webkit-font-smoothing: antialiased; }
 
 body {
-  font-family: var(--font-body);
-  background: var(--bg-root);
-  color: var(--text-primary);
+  font-family: var(--f-body);
+  background: var(--bg);
+  color: var(--txt);
   min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
   line-height: 1.5;
 }
 
-/* Subtle grid texture */
+/* Background atmosphere */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 70%);
+  background:
+    radial-gradient(ellipse 70% 45% at 50% -10%, rgba(34,197,94,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 90% 90%, rgba(16,185,129,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 30% at 5% 50%, rgba(5,150,105,0.03) 0%, transparent 70%);
 }
 
-/* ------------------------------------------------------------------ */
-/* Layout                                                              */
-/* ------------------------------------------------------------------ */
-.app { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+/* Fine grain */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+}
 
-/* ------------------------------------------------------------------ */
-/* Header                                                              */
-/* ------------------------------------------------------------------ */
+.app {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ─────────────────────────────────────────────── */
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 62px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28px 0 32px;
-  border-bottom: 1px solid var(--border-subtle);
-  margin-bottom: 36px;
-  flex-wrap: wrap;
+  padding: 0 28px;
   gap: 16px;
+  background: rgba(3,11,20,0.88);
+  backdrop-filter: blur(24px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
 }
 
-.header-brand {
+.h-brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
-.header-logo {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, var(--accent-dim), var(--accent));
+.logo-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #16A34A 0%, #22C55E 100%);
+  box-shadow: 0 0 20px rgba(34,197,94,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-  box-shadow: 0 0 20px var(--accent-glow);
+  flex-shrink: 0;
 }
 
-.header-title {
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-}
+.logo-mark svg { width: 18px; height: 18px; }
 
-.header-subtitle {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
+.brand-text { display: flex; flex-direction: column; line-height: 1; }
+
+.brand-name {
+  font-family: var(--f-disp);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-top: 1px;
+  color: var(--txt);
 }
 
+.brand-sub {
+  font-family: var(--f-mono);
+  font-size: 0.6rem;
+  color: var(--txt-3);
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+.h-stats {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.chip-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+.chip-total { background: rgba(255,255,255,0.04); border-color: var(--border); color: var(--txt-3); }
+.chip-total .chip-dot { background: var(--txt-3); }
+
+.chip-live { background: var(--green-dim); border-color: rgba(34,197,94,0.2); color: var(--green); }
+.chip-live .chip-dot { background: var(--green); box-shadow: 0 0 5px var(--green); }
+
+.chip-pending { background: var(--amber-dim); border-color: rgba(245,158,11,0.2); color: var(--amber); }
+.chip-pending .chip-dot { background: var(--amber); animation: blink 1.4s ease infinite; }
+
+@keyframes blink {
+  0%,100% { opacity:1; } 50% { opacity:0.3; }
+}
+
+.h-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.ws-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--f-mono);
+  font-size: 0.65rem;
+  color: var(--txt-3);
+}
+
+.ws-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--txt-3);
+  transition: background 0.4s, box-shadow 0.4s;
+}
+
+.ws-dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+/* ── BUTTONS ─────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-body);
-  font-size: 0.875rem;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--r-sm);
+  font-family: var(--f-body);
+  font-size: 0.84rem;
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  outline-offset: 2px;
+  transition: all 0.18s var(--ease);
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 
-.btn:focus-visible { outline: 2px solid var(--accent); }
+.btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.btn:disabled { opacity: 0.45; pointer-events: none; }
+
+.btn-sm { padding: 5px 12px; font-size: 0.78rem; }
 
 .btn-primary {
-  background: var(--accent);
-  color: #0a0f14;
-  box-shadow: 0 0 20px var(--accent-glow);
+  background: var(--green);
+  color: #021208;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.12) inset, 0 0 20px rgba(34,197,94,0.2);
 }
-.btn-primary:hover { background: #5eeadb; transform: translateY(-1px); }
-
-.btn-secondary {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
+.btn-primary:hover {
+  background: var(--green-light);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15) inset, 0 0 30px rgba(34,197,94,0.35);
+  transform: translateY(-1px);
 }
-.btn-secondary:hover { background: var(--bg-card-hover); border-color: var(--border-active); }
+.btn-primary:active { transform: none; }
 
-.btn-danger {
+.btn-ghost {
+  background: rgba(255,255,255,0.04);
+  color: var(--txt-2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: var(--border-h);
+  color: var(--txt);
+}
+
+.btn-red {
   background: transparent;
-  color: var(--danger);
-  border: 1px solid rgba(239,68,68,0.3);
+  color: var(--red);
+  border: 1px solid rgba(239,68,68,0.2);
 }
-.btn-danger:hover { background: rgba(239,68,68,0.1); border-color: var(--danger); }
-
-.btn-sm { padding: 6px 14px; font-size: 0.8rem; }
-
-/* ------------------------------------------------------------------ */
-/* Instance Grid                                                       */
-/* ------------------------------------------------------------------ */
-.instance-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 20px;
+.btn-red:hover {
+  background: var(--red-dim);
+  border-color: rgba(239,68,68,0.4);
 }
 
-.empty-state {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 20px;
-  text-align: center;
+.btn-red-solid {
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(239,68,68,0.2);
+}
+.btn-red-solid:hover {
+  background: #F87171;
+  box-shadow: 0 0 24px rgba(239,68,68,0.35);
 }
 
-.empty-state-icon {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: var(--bg-card);
-  border: 1px dashed var(--border-active);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  margin-bottom: 20px;
-  color: var(--text-muted);
+/* ── MAIN ─────────────────────────────────────────────────── */
+.main {
+  flex: 1;
+  padding: 28px 28px 48px;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-.empty-state-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-}
-
-.empty-state-desc {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  max-width: 300px;
-}
-
-/* ------------------------------------------------------------------ */
-/* Instance Card                                                       */
-/* ------------------------------------------------------------------ */
-.card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
-  overflow: hidden;
-  transition: all var(--transition-smooth);
-  animation: cardIn 0.4s ease both;
-}
-
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.card:hover { border-color: var(--border-active); box-shadow: var(--shadow-card); }
-
-.card-header {
+/* ── TOOLBAR ─────────────────────────────────────────────── */
+.toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px 14px;
+  margin-bottom: 24px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.card-id {
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-primary);
+.search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 280px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--txt-3);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px 0 34px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--txt);
+  font-family: var(--f-body);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.search-input::placeholder { color: var(--txt-3); }
+
+.search-input:focus {
+  border-color: var(--border-focus);
+  background: rgba(34,197,94,0.025);
+}
+
+/* ── GRID ─────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 16px;
+}
+
+/* ── EMPTY ─────────────────────────────────────────────────── */
+.empty {
+  grid-column: 1/-1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 90px 20px;
+  text-align: center;
+}
+
+.empty-orbit {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 24px;
+}
+
+.empty-orbit-ring {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 1px solid rgba(34,197,94,0.12);
+  border-top-color: rgba(34,197,94,0.4);
+  animation: orbit-spin 3s linear infinite;
+}
+
+@keyframes orbit-spin { to { transform: rotate(360deg); } }
+
+.empty-orbit-core {
+  position: absolute;
+  inset: 18px;
+  border-radius: 50%;
+  background: rgba(34,197,94,0.06);
+  border: 1px solid rgba(34,197,94,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(34,197,94,0.4);
+}
+
+.empty-h {
+  font-family: var(--f-disp);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--txt-2);
+  margin-bottom: 7px;
   letter-spacing: -0.01em;
 }
 
-/* Status badge */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.empty-p {
+  font-size: 0.84rem;
+  color: var(--txt-3);
+  max-width: 260px;
+  line-height: 1.65;
+  margin-bottom: 22px;
 }
 
-.status-badge::before {
-  content: '';
-  width: 7px;
-  height: 7px;
+/* ── CARD ─────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  transition: border-color 0.22s, background 0.22s, box-shadow 0.22s;
+  animation: card-in 0.42s var(--ease) both;
+  backdrop-filter: blur(4px);
+  position: relative;
+}
+
+@keyframes card-in {
+  from { opacity:0; transform: translateY(18px) scale(0.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+
+.card:hover {
+  background: var(--bg-card-h);
+  border-color: var(--border-h);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+}
+
+/* Status stripe at top */
+.card-stripe {
+  height: 3px;
+  transition: background 0.3s, box-shadow 0.3s, opacity 0.3s;
+}
+
+.card[data-status="open"] .card-stripe {
+  background: var(--green);
+  box-shadow: 0 0 10px rgba(34,197,94,0.5);
+}
+
+.card[data-status="connecting"] .card-stripe {
+  background: var(--amber);
+  animation: stripe-breathe 2s ease infinite;
+}
+
+.card[data-status="disconnected"] .card-stripe,
+.card[data-status="close"] .card-stripe {
+  background: rgba(255,255,255,0.08);
+}
+
+@keyframes stripe-breathe {
+  0%,100% { opacity:.5; } 50% { opacity:1; }
+}
+
+/* Open card border glow */
+.card[data-status="open"] {
+  border-color: rgba(34,197,94,0.14);
+}
+
+.card[data-status="open"]:hover {
+  border-color: rgba(34,197,94,0.28);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(34,197,94,0.04);
+}
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 17px 18px 13px;
+  gap: 12px;
+}
+
+.card-id-block { flex: 1; min-width: 0; }
+
+.card-super {
+  font-family: var(--f-mono);
+  font-size: 0.61rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--txt-3);
+  margin-bottom: 4px;
+}
+
+.card-id {
+  font-family: var(--f-mono);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--txt);
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Status pill */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 20px;
+  font-size: 0.67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  font-family: var(--f-mono);
+}
+
+.s-dot {
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.status-open { background: var(--status-open-bg); color: var(--status-open); }
-.status-open::before { background: var(--status-open); box-shadow: 0 0 6px var(--status-open); }
-
-.status-connecting { background: var(--status-connecting-bg); color: var(--status-connecting); }
-.status-connecting::before {
-  background: var(--status-connecting);
-  box-shadow: 0 0 6px var(--status-connecting);
-  animation: pulse-dot 1.2s ease-in-out infinite;
+.status-pill.open {
+  background: var(--green-dim);
+  border-color: rgba(34,197,94,0.18);
+  color: var(--green);
+}
+.status-pill.open .s-dot {
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
 }
 
-.status-disconnected,
-.status-close { background: var(--status-closed-bg); color: var(--status-closed); }
-.status-disconnected::before,
-.status-close::before { background: var(--status-closed); }
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+.status-pill.connecting {
+  background: var(--amber-dim);
+  border-color: rgba(245,158,11,0.18);
+  color: var(--amber);
+}
+.status-pill.connecting .s-dot {
+  background: var(--amber);
+  animation: blink 1.2s ease infinite;
 }
 
-/* QR area */
+.status-pill.disconnected,
+.status-pill.close {
+  background: rgba(255,255,255,0.03);
+  border-color: var(--border);
+  color: var(--txt-3);
+}
+.status-pill.disconnected .s-dot,
+.status-pill.close .s-dot { background: var(--txt-3); }
+
+/* ── QR ── */
 .card-qr {
+  padding: 4px 18px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 4px 20px 16px;
-  gap: 10px;
+  gap: 11px;
 }
 
-.card-qr img {
-  border-radius: var(--radius-md);
+.qr-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.qr-img {
+  display: block;
+  width: 186px;
+  height: 186px;
+  border-radius: 10px;
   background: #fff;
-  padding: 8px;
-  width: 180px;
-  height: 180px;
+  padding: 9px;
   object-fit: contain;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.55);
 }
 
-.qr-label {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+.qr-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: var(--green);
+  border-style: solid;
+  border-width: 0;
+}
+.qr-corner.tl { top:-2px; left:-2px; border-top-width:2px; border-left-width:2px; border-radius:3px 0 0 0; }
+.qr-corner.tr { top:-2px; right:-2px; border-top-width:2px; border-right-width:2px; border-radius:0 3px 0 0; }
+.qr-corner.bl { bottom:-2px; left:-2px; border-bottom-width:2px; border-left-width:2px; border-radius:0 0 0 3px; }
+.qr-corner.br { bottom:-2px; right:-2px; border-bottom-width:2px; border-right-width:2px; border-radius:0 0 3px 0; }
+
+.qr-scan {
+  position: absolute;
+  left: 3px; right: 3px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
+  box-shadow: 0 0 8px var(--green);
+  border-radius: 1px;
+  animation: scan-sweep 2.4s ease-in-out infinite;
+}
+
+@keyframes scan-sweep {
+  0%   { top:3px; opacity:0; }
+  8%   { opacity:1; }
+  92%  { opacity:1; }
+  100% { top:calc(100% - 5px); opacity:0; }
+}
+
+.qr-hint {
+  font-family: var(--f-mono);
+  font-size: 0.66rem;
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--txt-3);
 }
 
-/* Pairing code */
-.card-pairing {
-  margin: 0 20px 12px;
-  padding: 10px 16px;
-  background: var(--bg-input);
-  border-radius: var(--radius-sm);
-  border: 1px dashed var(--accent-dim);
+/* ── Pairing ── */
+.pairing-box {
+  margin: 0 18px 14px;
+  padding: 13px 16px;
+  background: rgba(34,197,94,0.04);
+  border: 1px dashed rgba(34,197,94,0.22);
+  border-radius: var(--r-sm);
   text-align: center;
 }
 
-.pairing-code-value {
-  font-family: var(--font-mono);
-  font-size: 1.1rem;
+.pairing-label {
+  font-family: var(--f-mono);
+  font-size: 0.61rem;
   font-weight: 600;
-  color: var(--accent);
-  letter-spacing: 0.15em;
-}
-
-.pairing-code-label {
-  font-size: 0.68rem;
-  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 4px;
+  letter-spacing: 0.09em;
+  color: var(--txt-3);
+  margin-bottom: 6px;
 }
 
-/* Error message */
+.pairing-code {
+  font-family: var(--f-mono);
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--green);
+  text-shadow: 0 0 24px rgba(34,197,94,0.45);
+}
+
+/* ── Error ── */
 .card-error {
-  margin: 0 20px 12px;
-  padding: 10px 14px;
-  background: var(--status-closed-bg);
-  border-radius: var(--radius-sm);
-  border-left: 3px solid var(--danger);
-  font-size: 0.8rem;
-  color: #fca5a5;
-  font-family: var(--font-mono);
+  margin: 0 18px 14px;
+  padding: 9px 13px;
+  background: var(--red-dim);
+  border-radius: var(--r-sm);
+  border-left: 2px solid var(--red);
+  font-family: var(--f-mono);
+  font-size: 0.76rem;
+  color: #FCA5A5;
+  line-height: 1.45;
   word-break: break-word;
 }
 
-/* Card actions */
+/* ── Card Actions ── */
 .card-actions {
   display: flex;
-  gap: 8px;
-  padding: 14px 20px 18px;
+  gap: 7px;
+  padding: 11px 18px 16px;
+  border-top: 1px solid var(--border);
   flex-wrap: wrap;
 }
 
-/* ------------------------------------------------------------------ */
-/* Modal                                                               */
-/* ------------------------------------------------------------------ */
-.modal-overlay {
+/* ── MODAL ─────────────────────────────────────────────────── */
+.overlay {
   position: fixed;
   inset: 0;
-  background: var(--bg-modal-overlay);
-  backdrop-filter: blur(4px);
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(10px) saturate(0.75);
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  animation: fadeIn 0.2s ease;
+  animation: fade-in 0.18s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+@keyframes fade-in { from { opacity:0; } to { opacity:1; } }
 
 .modal {
-  background: var(--bg-surface);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-subtle);
+  background: #080F1C;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--r-xl);
   width: 100%;
-  max-width: 420px;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
-  animation: modalIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 430px;
+  box-shadow: 0 40px 90px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04);
+  animation: modal-in 0.24s var(--ease);
+  overflow: hidden;
 }
 
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.95) translateY(8px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+@keyframes modal-in {
+  from { opacity:0; transform: scale(0.93) translateY(12px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
 }
 
-.modal-header {
+.modal-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 24px 0;
+  padding: 22px 22px 0;
 }
 
 .modal-title {
-  font-size: 1.1rem;
+  font-family: var(--f-disp);
+  font-size: 1.05rem;
   font-weight: 700;
-  color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
-.modal-close {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: var(--bg-card);
-  color: var(--text-secondary);
-  font-size: 18px;
+.modal-x {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--txt-3);
+  font-size: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: all 0.15s;
+  line-height: 1;
 }
-.modal-close:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+.modal-x:hover { background: rgba(255,255,255,0.06); color: var(--txt); }
 
-.modal-body { padding: 20px 24px 24px; }
+.modal-body { padding: 20px 22px 22px; }
 
-.form-group { margin-bottom: 18px; }
+.field { margin-bottom: 16px; }
 
-.form-label {
+.field-label {
   display: block;
-  font-size: 0.8rem;
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
   font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.07em;
+  color: var(--txt-3);
+  margin-bottom: 7px;
 }
 
-.form-input {
+.field-input {
   width: 100%;
-  padding: 10px 14px;
+  height: 42px;
+  padding: 0 13px;
   background: var(--bg-input);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--txt);
+  font-family: var(--f-mono);
+  font-size: 0.92rem;
   outline: none;
-  transition: border-color var(--transition-fast);
+  transition: border-color 0.15s, background 0.15s;
+}
+.field-input:focus {
+  border-color: var(--border-focus);
+  background: rgba(34,197,94,0.025);
+}
+.field-input::placeholder { color: var(--txt-3); font-family: var(--f-body); font-size: 0.83rem; }
+
+.field-hint {
+  margin-top: 5px;
+  font-size: 0.71rem;
+  color: var(--txt-3);
+  line-height: 1.5;
 }
 
-.form-input:focus { border-color: var(--accent); }
-
-.form-input::placeholder { color: var(--text-muted); font-family: var(--font-body); font-size: 0.8rem; }
-
-.form-hint {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-
-.checkbox-group {
+/* Toggle */
+.toggle-row {
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
-}
-
-.checkbox-group input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-
-.checkbox-label {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  cursor: pointer;
   user-select: none;
+  padding: 10px 13px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  transition: border-color 0.15s;
 }
+.toggle-row:hover { border-color: var(--border-h); }
 
-.modal-actions {
+.toggle {
+  appearance: none;
+  width: 34px;
+  height: 19px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--txt-3);
+  transition: transform 0.2s var(--ease-spring), background 0.2s;
+}
+.toggle:checked {
+  background: rgba(34,197,94,0.18);
+  border-color: rgba(34,197,94,0.35);
+}
+.toggle:checked::after { transform: translateX(15px); background: var(--green); }
+
+.toggle-text { font-size: 0.84rem; color: var(--txt-2); }
+
+.modal-footer {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: flex-end;
-  margin-top: 8px;
+  padding-top: 6px;
 }
 
-/* Delete confirm specifics */
-.delete-warning {
+/* Delete warning box */
+.warn-box {
   display: flex;
-  align-items: flex-start;
   gap: 12px;
-  padding: 14px 16px;
-  background: var(--status-closed-bg);
-  border-radius: var(--radius-sm);
-  margin-bottom: 8px;
+  padding: 13px 15px;
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.14);
+  border-radius: var(--r-sm);
+  margin-bottom: 18px;
 }
 
-.delete-warning-icon { font-size: 20px; flex-shrink: 0; }
+.warn-icon { font-size: 17px; flex-shrink: 0; padding-top: 1px; }
 
-.delete-warning-text {
-  font-size: 0.82rem;
-  color: #fca5a5;
-  line-height: 1.5;
-}
+.warn-text { font-size: 0.82rem; color: #FCA5A5; line-height: 1.6; }
+.warn-text strong { color: #F87171; }
 
-.delete-warning-text strong { color: #f87171; }
-
-/* ------------------------------------------------------------------ */
-/* Toast                                                               */
-/* ------------------------------------------------------------------ */
-.toast-container {
+/* ── TOASTS ─────────────────────────────────────────────── */
+.toasts {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  bottom: 22px;
+  right: 22px;
   z-index: 200;
   display: flex;
   flex-direction: column;
   gap: 8px;
   pointer-events: none;
+  align-items: flex-end;
 }
 
 .toast {
   pointer-events: auto;
-  padding: 12px 18px;
-  border-radius: var(--radius-sm);
-  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 15px;
+  border-radius: var(--r-sm);
+  font-size: 0.83rem;
   font-weight: 500;
-  color: var(--text-primary);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  animation: slideIn 0.3s ease;
-  max-width: 360px;
+  color: var(--txt);
+  background: #0B1522;
+  border: 1px solid rgba(255,255,255,0.09);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.55);
+  animation: toast-in 0.28s var(--ease);
+  max-width: 320px;
+  line-height: 1.4;
 }
 
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
+@keyframes toast-in {
+  from { opacity:0; transform: translateY(8px) scale(0.95); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
 }
 
-.toast-success { border-left: 3px solid var(--status-open); }
-.toast-error { border-left: 3px solid var(--danger); }
-.toast-info { border-left: 3px solid var(--accent); }
+.toast-i {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800;
+  flex-shrink: 0;
+}
 
-/* ------------------------------------------------------------------ */
-/* Responsive                                                          */
-/* ------------------------------------------------------------------ */
+.toast-success .toast-i { background: var(--green); color: #020C08; }
+.toast-error   .toast-i { background: var(--red);   color: #fff; }
+.toast-info    .toast-i { background: rgba(255,255,255,0.08); color: var(--txt-2); }
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .app { padding: 0 16px; }
-  .header { padding: 20px 0 24px; margin-bottom: 24px; }
-  .instance-grid { grid-template-columns: 1fr; }
-  .card-qr img { width: 140px; height: 140px; }
-  .modal { margin: 0 8px; }
+  .header { padding: 0 16px; }
+  .h-stats { display: none; }
+  .ws-indicator { display: none; }
+  .main { padding: 20px 16px 40px; }
+  .grid { grid-template-columns: 1fr; gap: 14px; }
+  .qr-img { width: 166px; height: 166px; }
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .search-wrap { max-width: none; }
+  .brand-sub { display: none; }
 }
 </style>
 </head>
 <body>
 
 <div class="app">
-  <!-- Header -->
+
+  <!-- ── HEADER ── -->
   <header class="header">
-    <div class="header-brand">
-      <div class="header-logo">⚡</div>
-      <div>
-        <div class="header-title">Baileys Panel</div>
-        <div class="header-subtitle">WhatsApp Connection Manager</div>
+    <div class="h-brand">
+      <div class="logo-mark">
+        <!-- WhatsApp icon -->
+        <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">Baileys</span>
+        <span class="brand-sub">WhatsApp Manager</span>
       </div>
     </div>
-    <button class="btn btn-primary" id="btn-add" onclick="showAddModal()">
-      <span>+</span> Add Instance
-    </button>
+
+    <div class="h-stats">
+      <div class="chip chip-total">
+        <span class="chip-dot"></span>
+        <span id="stat-total">0</span> total
+      </div>
+      <div class="chip chip-live">
+        <span class="chip-dot"></span>
+        <span id="stat-live">0</span> live
+      </div>
+      <div class="chip chip-pending">
+        <span class="chip-dot"></span>
+        <span id="stat-pending">0</span> pending
+      </div>
+    </div>
+
+    <div class="h-right">
+      <div class="ws-indicator">
+        <div class="ws-dot" id="ws-dot"></div>
+        <span id="ws-label">offline</span>
+      </div>
+      <button class="btn btn-primary" onclick="openAddModal()">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/>
+        </svg>
+        New Instance
+      </button>
+    </div>
   </header>
 
-  <!-- Instance Grid -->
-  <div class="instance-grid" id="instance-grid">
-    <div class="empty-state">
-      <div class="empty-state-icon">📱</div>
-      <div class="empty-state-title">No instances yet</div>
-      <div class="empty-state-desc">Click "Add Instance" to connect your first WhatsApp number</div>
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg class="search-icon" width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="9" cy="9" r="6"/><line x1="15" y1="15" x2="19" y2="19"/>
+        </svg>
+        <input class="search-input" id="search" type="text" placeholder="Filter by number…" oninput="applyFilter()" autocomplete="off">
+      </div>
     </div>
-  </div>
+
+    <div class="grid" id="grid">
+      <!-- Cards rendered by JS -->
+    </div>
+
+  </main>
 </div>
 
-<!-- Toast container -->
-<div class="toast-container" id="toast-container"></div>
+<!-- ── TOASTS ── -->
+<div class="toasts" id="toasts"></div>
 
-<!-- Add/Edit Instance Modal -->
-<div class="modal-overlay" id="modal-add" hidden>
+<!-- ── ADD MODAL ── -->
+<div class="overlay" id="modal-add" hidden>
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Add Instance</div>
-      <button class="modal-close" onclick="hideModal('modal-add')">&times;</button>
+    <div class="modal-top">
+      <div class="modal-title">New Instance</div>
+      <button class="modal-x" onclick="closeModal('modal-add')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label" for="input-phone">Phone Number</label>
-        <input
-          class="form-input"
-          id="input-phone"
-          type="text"
-          placeholder="Ex: 5511999999999"
-          autocomplete="off"
-        />
-        <div class="form-hint">Include country code (e.g., 55 for Brazil, 1 for US)</div>
+      <div class="field">
+        <label class="field-label" for="inp-phone">Phone Number</label>
+        <input class="field-input" id="inp-phone" type="text" placeholder="5511999999999" autocomplete="off">
+        <div class="field-hint">Include country code — e.g. 55 for Brazil, 1 for US</div>
       </div>
-      <div class="form-group">
-        <label class="checkbox-group">
-          <input type="checkbox" id="input-pairing" />
-          <span class="checkbox-label">Use pairing code (enter phone in WhatsApp)</span>
+      <div class="field">
+        <label class="toggle-row">
+          <input type="checkbox" class="toggle" id="inp-pairing">
+          <span class="toggle-text">Use pairing code instead of QR</span>
         </label>
       </div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="hideModal('modal-add')">Cancel</button>
-        <button class="btn btn-primary" id="btn-submit-add" onclick="handleAddInstance()">Connect</button>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('modal-add')">Cancel</button>
+        <button class="btn btn-primary" onclick="handleAdd()">Connect</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal-overlay" id="modal-delete" hidden>
+<!-- ── DELETE MODAL ── -->
+<div class="overlay" id="modal-delete" hidden>
   <div class="modal">
-    <div class="modal-header">
+    <div class="modal-top">
       <div class="modal-title">Delete Instance</div>
-      <button class="modal-close" onclick="hideModal('modal-delete')">&times;</button>
+      <button class="modal-x" onclick="closeModal('modal-delete')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="delete-warning">
-        <div class="delete-warning-icon">⚠️</div>
-        <div class="delete-warning-text">
-          This will <strong>permanently delete</strong> the instance <strong id="delete-instance-name">—</strong>
-          and all its authentication data. This action cannot be undone.
+      <div class="warn-box">
+        <div class="warn-icon">⚠️</div>
+        <div class="warn-text">
+          This will <strong>permanently delete</strong> instance
+          <strong id="del-target-label">—</strong> and all its
+          authentication data. This action cannot be undone.
         </div>
       </div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="hideModal('modal-delete')">Cancel</button>
-        <button class="btn btn-danger" id="btn-confirm-delete">Delete Permanently</button>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('modal-delete')">Cancel</button>
+        <button class="btn btn-red-solid" id="btn-del-confirm">Delete Permanently</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// ---------------------------------------------------------------------------
-// State
-// ---------------------------------------------------------------------------
-let instances = {};        // id -> InstanceInfo
-let deleteTargetId = null;
-let qrTimers = {};         // id -> intervalId
+// ─── STATE ──────────────────────────────────────────────────────────────────
+let instances  = {};     // id → InstanceInfo
+let deleteId   = null;
+let qrTimers   = {};
+let filterText = '';
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-const $ = (sel) => document.querySelector(sel);
-const $$ = (sel) => document.querySelectorAll(sel);
-const api = async (path, opts) => {
-  const r = await fetch(path, opts);
-  const data = await r.json().catch(() => ({ error: `HTTP ${r.status}` }));
-  if (!r.ok) {
-    throw new Error(data.error || `Request failed (${r.status})`);
-  }
-  return data;
+// ─── UTILS ──────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const api = async (url, opts) => {
+  const r = await fetch(url, opts);
+  const d = await r.json().catch(() => ({ error: `HTTP ${r.status}` }));
+  if (!r.ok) throw new Error(d.error || `Request failed (${r.status})`);
+  return d;
 };
 
-function statusClass(status) {
-  if (status === 'open') return 'status-open';
-  if (status === 'connecting') return 'status-connecting';
-  return 'status-disconnected';
-}
-
-function statusIcon(status) {
-  if (status === 'open') return '🟢';
-  if (status === 'connecting') return '🟡';
-  return '⚫';
-}
-
-// ---------------------------------------------------------------------------
-// Toast
-// ---------------------------------------------------------------------------
+// ─── TOAST ──────────────────────────────────────────────────────────────────
 function toast(msg, type = 'info') {
+  const icons = { success: '✓', error: '✕', info: 'i' };
   const el = document.createElement('div');
   el.className = `toast toast-${type}`;
-  el.textContent = msg;
-  $('#toast-container').appendChild(el);
-  setTimeout(() => { el.remove(); }, 4000);
+  el.innerHTML = `<span class="toast-i">${icons[type] ?? 'i'}</span><span>${msg}</span>`;
+  $('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 4200);
 }
 
-// ---------------------------------------------------------------------------
-// Modal
-// ---------------------------------------------------------------------------
-function showModal(id) { $('#' + id).hidden = false; }
-function hideModal(id) { $('#' + id).hidden = true; }
+// ─── MODALS ─────────────────────────────────────────────────────────────────
+function openModal(id)  { $(id).hidden = false; }
+function closeModal(id) { $(id).hidden = true; }
 
-function showAddModal() {
-  $('#input-phone').value = '';
-  $('#input-pairing').checked = false;
-  showModal('modal-add');
-  setTimeout(() => $('#input-phone').focus(), 100);
+function openAddModal() {
+  $('inp-phone').value = '';
+  $('inp-pairing').checked = false;
+  openModal('modal-add');
+  setTimeout(() => $('inp-phone').focus(), 80);
 }
 
-function showDeleteModal(id) {
-  deleteTargetId = id;
-  $('#delete-instance-name').textContent = id;
-  showModal('modal-delete');
+function openDeleteModal(id) {
+  deleteId = id;
+  $('del-target-label').textContent = '+' + id;
+  openModal('modal-delete');
 }
 
-// Close modals on overlay click
-document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('modal-overlay')) {
-    e.target.hidden = true;
-  }
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('overlay')) e.target.hidden = true;
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape')
+    document.querySelectorAll('.overlay').forEach(m => { m.hidden = true; });
 });
 
-// Close modals on Escape
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    $$('.modal-overlay').forEach(m => { m.hidden = true; });
-  }
+$('inp-phone').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleAdd();
 });
 
-// ---------------------------------------------------------------------------
-// QR Refresh
-// ---------------------------------------------------------------------------
-function startQrRefresh(id) {
-  stopQrRefresh(id);
-  const img = $(`[data-qr="${id}"]`);
-  if (!img) return;
-
-  let attempt = 0;
-  const refresh = () => {
-    const inst = instances[id];
-    if (!inst || !inst.qr) {
-      stopQrRefresh(id);
-      return;
-    }
-    img.src = `/api/instances/${encodeURIComponent(id)}/qr-image?t=${Date.now()}`;
-    attempt++;
-    if (attempt > 60) stopQrRefresh(id); // stop after 5 min
+// ─── QR REFRESH ─────────────────────────────────────────────────────────────
+function startQr(id) {
+  stopQr(id);
+  let n = 0;
+  const tick = () => {
+    if (!instances[id]?.qr) { stopQr(id); return; }
+    const img = document.querySelector(`[data-qr="${id}"]`);
+    if (img) img.src = `/api/instances/${encodeURIComponent(id)}/qr-image?t=${Date.now()}`;
+    if (++n > 72) stopQr(id);
   };
-  refresh();
-  qrTimers[id] = setInterval(refresh, 5000);
+  tick();
+  qrTimers[id] = setInterval(tick, 5000);
 }
 
-function stopQrRefresh(id) {
-  if (qrTimers[id]) {
-    clearInterval(qrTimers[id]);
-    delete qrTimers[id];
-  }
+function stopQr(id) {
+  clearInterval(qrTimers[id]);
+  delete qrTimers[id];
 }
 
-// ---------------------------------------------------------------------------
-// Render
-// ---------------------------------------------------------------------------
+// ─── STATS ──────────────────────────────────────────────────────────────────
+function updateStats() {
+  const all   = Object.values(instances);
+  const live  = all.filter(i => i.status === 'open').length;
+  const pend  = all.filter(i => i.status === 'connecting').length;
+  $('stat-total').textContent   = all.length;
+  $('stat-live').textContent    = live;
+  $('stat-pending').textContent = pend;
+}
+
+// ─── RENDER ─────────────────────────────────────────────────────────────────
+function renderCard(id) {
+  const i = instances[id];
+  const s = i.status;
+  const sc = ['open','connecting','disconnected','close'].includes(s) ? s : 'disconnected';
+
+  const hasQr      = s === 'connecting' && i.qr;
+  const hasPairing = s === 'connecting' && i.pairingCode;
+  const hasError   = i.error && s !== 'open' && s !== 'connecting';
+
+  return `
+<div class="card" data-status="${s}" data-id="${id}" style="animation-delay:${Object.keys(instances).indexOf(id)*0.04}s">
+  <div class="card-stripe"></div>
+  <div class="card-head">
+    <div class="card-id-block">
+      <div class="card-super">WhatsApp Instance</div>
+      <div class="card-id">+${id}</div>
+    </div>
+    <span class="status-pill ${sc}">
+      <span class="s-dot"></span>${s === 'close' ? 'closed' : s}
+    </span>
+  </div>
+  ${hasQr ? `
+  <div class="card-qr">
+    <div class="qr-wrap">
+      <img class="qr-img" data-qr="${id}" src="/api/instances/${encodeURIComponent(id)}/qr-image" alt="QR">
+      <div class="qr-scan"></div>
+      <div class="qr-corner tl"></div><div class="qr-corner tr"></div>
+      <div class="qr-corner bl"></div><div class="qr-corner br"></div>
+    </div>
+    <div class="qr-hint">Scan with WhatsApp to connect</div>
+  </div>` : ''}
+  ${hasPairing ? `
+  <div class="pairing-box">
+    <div class="pairing-label">Pairing Code</div>
+    <div class="pairing-code">${i.pairingCode}</div>
+  </div>` : ''}
+  ${hasError ? `<div class="card-error">${i.error}</div>` : ''}
+  <div class="card-actions">
+    ${(s === 'disconnected' || s === 'close') ? `
+      <button class="btn btn-primary btn-sm" onclick="doConnect('${id}')">
+        <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="5,2 11,7 5,12"/>
+        </svg>Connect
+      </button>` : ''}
+    ${s === 'open' ? `
+      <button class="btn btn-ghost btn-sm" onclick="doDisconnect('${id}')">
+        <svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
+        </svg>Disconnect
+      </button>` : ''}
+    ${s === 'connecting' ? `
+      <button class="btn btn-ghost btn-sm" onclick="doDisconnect('${id}')">
+        Cancel
+      </button>` : ''}
+    <button class="btn btn-red btn-sm" onclick="openDeleteModal('${id}')">
+      <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="2,4 12,4"/><path d="M5,4V2h4v2"/><path d="M3,4l1,9h6l1-9"/>
+      </svg>Delete
+    </button>
+  </div>
+</div>`;
+}
+
 function renderGrid() {
-  const grid = $('#instance-grid');
-  const ids = Object.keys(instances);
+  const grid = $('grid');
+  let ids = Object.keys(instances);
+
+  if (filterText) {
+    ids = ids.filter(id => id.includes(filterText));
+  }
 
   if (ids.length === 0) {
+    const emptyMsg = filterText
+      ? `No instances match "<strong>${filterText}</strong>"`
+      : 'No instances yet';
+    const emptySubMsg = filterText
+      ? 'Try a different number'
+      : 'Click "New Instance" to connect your first WhatsApp number';
+
     grid.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">📱</div>
-        <div class="empty-state-title">No instances yet</div>
-        <div class="empty-state-desc">Click "Add Instance" to connect your first WhatsApp number</div>
-      </div>`;
+<div class="empty">
+  <div class="empty-orbit">
+    <div class="empty-orbit-ring"></div>
+    <div class="empty-orbit-core">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+    </div>
+  </div>
+  <div class="empty-h">${emptyMsg}</div>
+  <div class="empty-p">${emptySubMsg}</div>
+  ${!filterText ? `<button class="btn btn-primary" onclick="openAddModal()">
+    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/>
+    </svg>New Instance</button>` : ''}
+</div>`;
     return;
   }
 
-  grid.innerHTML = ids.map(id => {
-    const inst = instances[id];
-    const sc = statusClass(inst.status);
-    const hasQr = inst.status === 'connecting' && inst.qr;
-    const hasPairingCode = inst.status === 'connecting' && inst.pairingCode;
-    const hasError = inst.error && inst.status !== 'open' && inst.status !== 'connecting';
+  grid.innerHTML = ids.map(renderCard).join('');
 
-    return `
-    <div class="card" style="animation-delay:${ids.indexOf(id) * 0.05}s" data-instance="${id}">
-      <div class="card-header">
-        <span class="card-id">📱 +${id}</span>
-        <span class="status-badge ${sc}">${inst.status}</span>
-      </div>
-      ${hasQr ? `
-        <div class="card-qr">
-          <img data-qr="${id}" src="/api/instances/${encodeURIComponent(id)}/qr-image" alt="QR Code" />
-          <span class="qr-label">Scan with WhatsApp</span>
-        </div>` : ''}
-      ${hasPairingCode ? `
-        <div class="card-pairing">
-          <div class="pairing-code-label">Pairing Code</div>
-          <div class="pairing-code-value">${inst.pairingCode}</div>
-        </div>` : ''}
-      ${hasError ? `
-        <div class="card-error">${inst.error}</div>` : ''}
-      <div class="card-actions">
-        ${inst.status === 'disconnected' || inst.status === 'close' ? `
-          <button class="btn btn-primary btn-sm" onclick="connectInstance('${id}')">Connect</button>
-        ` : ''}
-        ${inst.status === 'open' ? `
-          <button class="btn btn-secondary btn-sm" onclick="disconnectInstance('${id}')">Disconnect</button>
-        ` : ''}
-        ${inst.status === 'connecting' ? `
-          <button class="btn btn-secondary btn-sm" onclick="disconnectInstance('${id}')">Cancel</button>
-        ` : ''}
-        <button class="btn btn-danger btn-sm" onclick="showDeleteModal('${id}')">Delete</button>
-      </div>
-    </div>`;
-  }).join('');
-
-  // Start QR refresh for connecting instances
+  // Start QR refresh for connecting cards
   ids.forEach(id => {
     if (instances[id]?.status === 'connecting' && instances[id]?.qr) {
-      startQrRefresh(id);
+      startQr(id);
+    } else {
+      stopQr(id);
     }
   });
 }
 
-function updateInstance(id, data) {
+function applyFilter() {
+  filterText = $('search').value.replace(/[^0-9]/g, '');
+  renderGrid();
+}
+
+function patch(id, data) {
   instances[id] = { ...instances[id], ...data };
   renderGrid();
+  updateStats();
 }
 
-function removeInstance(id) {
-  stopQrRefresh(id);
+function remove(id) {
+  stopQr(id);
   delete instances[id];
   renderGrid();
+  updateStats();
 }
 
-// ---------------------------------------------------------------------------
-// Actions
-// ---------------------------------------------------------------------------
-async function connectInstance(id) {
+// ─── ACTIONS ────────────────────────────────────────────────────────────────
+async function doConnect(id) {
   try {
-    const res = await api(`/api/instances/${encodeURIComponent(id)}/connect`, { method: 'POST' });
-    updateInstance(id, res);
-    toast(`Connecting ${id}...`, 'info');
-  } catch (err) {
-    toast(`Failed to connect: ${err.message}`, 'error');
-  }
+    const r = await api(`/api/instances/${encodeURIComponent(id)}/connect`, { method: 'POST' });
+    patch(id, r);
+    toast(`Connecting to +${id}…`, 'info');
+  } catch (e) { toast(`Connect failed: ${e.message}`, 'error'); }
 }
 
-async function disconnectInstance(id) {
+async function doDisconnect(id) {
   try {
-    const res = await api(`/api/instances/${encodeURIComponent(id)}/disconnect`, { method: 'POST' });
-    updateInstance(id, res);
-    toast(`Disconnected ${id}`, 'success');
-  } catch (err) {
-    toast(`Failed to disconnect: ${err.message}`, 'error');
-  }
+    const r = await api(`/api/instances/${encodeURIComponent(id)}/disconnect`, { method: 'POST' });
+    patch(id, r);
+    toast(`Disconnected +${id}`, 'success');
+  } catch (e) { toast(`Disconnect failed: ${e.message}`, 'error'); }
 }
 
-async function deleteInstance(id) {
+async function doDelete(id) {
   try {
     await api(`/api/instances/${encodeURIComponent(id)}`, { method: 'DELETE' });
-    removeInstance(id);
-    toast(`Deleted ${id}`, 'success');
-  } catch (err) {
-    toast(`Failed to delete: ${err.message}`, 'error');
-  }
+    remove(id);
+    toast(`Instance +${id} deleted`, 'success');
+  } catch (e) { toast(`Delete failed: ${e.message}`, 'error'); }
 }
 
-async function handleAddInstance() {
-  const phone = $('#input-phone').value.trim();
-  if (!phone) {
-    toast('Please enter a phone number', 'error');
-    return;
-  }
-  // Basic sanitize
-  const id = phone.replace(/[^0-9]/g, '');
-  if (!id) {
-    toast('Invalid phone number', 'error');
-    return;
-  }
+async function handleAdd() {
+  const raw = $('inp-phone').value.trim();
+  const id  = raw.replace(/[^0-9]/g, '');
+  if (!id) { toast('Enter a valid phone number', 'error'); return; }
 
-  hideModal('modal-add');
+  closeModal('modal-add');
 
-  const usePairing = $('#input-pairing').checked;
+  const usePairing = $('inp-pairing').checked;
   const body = usePairing ? JSON.stringify({ phoneNumber: id }) : '{}';
 
   try {
-    const res = await api(`/api/instances/${encodeURIComponent(id)}/connect`, {
+    const r = await api(`/api/instances/${encodeURIComponent(id)}/connect`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body
     });
-    updateInstance(id, res);
-    toast(`Starting connection for ${id}...`, 'info');
-  } catch (err) {
-    toast(`Failed: ${err.message}`, 'error');
-  }
+    patch(id, r);
+    toast(`Starting +${id}…`, 'info');
+  } catch (e) { toast(`Failed: ${e.message}`, 'error'); }
 }
 
-// Delete confirm button
-$('#btn-confirm-delete').addEventListener('click', () => {
-  if (deleteTargetId) {
-    deleteInstance(deleteTargetId);
-    hideModal('modal-delete');
+$('btn-del-confirm').addEventListener('click', () => {
+  if (deleteId) {
+    doDelete(deleteId);
+    closeModal('modal-delete');
+    deleteId = null;
   }
 });
 
-// Add instance on Enter key in phone input
-$('#input-phone').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') handleAddInstance();
-});
+// ─── WEBSOCKET ───────────────────────────────────────────────────────────────
+function setWsState(on) {
+  const dot   = $('ws-dot');
+  const label = $('ws-label');
+  if (on) { dot.classList.add('on'); label.textContent = 'live'; }
+  else     { dot.classList.remove('on'); label.textContent = 'offline'; }
+}
 
-// ---------------------------------------------------------------------------
-// WebSocket
-// ---------------------------------------------------------------------------
 function connectWs() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  const ws = new WebSocket(`${proto}://${location.host}/ws`);
+  const ws    = new WebSocket(`${proto}://${location.host}/ws`);
 
-  ws.onmessage = (e) => {
+  ws.onopen  = () => setWsState(true);
+  ws.onclose = () => { setWsState(false); setTimeout(connectWs, 5000); };
+  ws.onerror = () => ws.close();
+
+  ws.onmessage = e => {
     try {
-      const msg = JSON.parse(e.data);
-      switch (msg.event) {
+      const { event, data } = JSON.parse(e.data);
+      switch (event) {
         case 'status-update':
-          updateInstance(msg.data.id, msg.data);
+          patch(data.id, data);
           break;
-        case 'qr-update': {
-          const { id, qr } = msg.data;
-          if (instances[id]) {
-            instances[id].qr = qr;
+        case 'qr-update':
+          if (instances[data.id]) {
+            instances[data.id].qr = data.qr;
+            renderGrid();
+            updateStats();
+          }
+          break;
+        case 'pairing-code':
+          if (instances[data.id]) {
+            instances[data.id].pairingCode = data.code;
             renderGrid();
           }
           break;
-        }
-        case 'pairing-code': {
-          const { id, code } = msg.data;
-          if (instances[id]) {
-            instances[id].pairingCode = code;
-            renderGrid();
-          }
-          break;
-        }
         case 'instance-deleted':
-          removeInstance(msg.data.id);
+          remove(data.id);
           break;
       }
     } catch {}
   };
-
-  ws.onclose = () => {
-    // Reconnect after delay
-    setTimeout(connectWs, 5000);
-  };
-
-  ws.onerror = () => {
-    ws.close();
-  };
 }
 
-// ---------------------------------------------------------------------------
-// Init
-// ---------------------------------------------------------------------------
+// ─── INIT ────────────────────────────────────────────────────────────────────
 async function init() {
   try {
     const list = await api('/api/instances');
     if (Array.isArray(list)) {
-      for (const inst of list) {
-        instances[inst.id] = inst;
-      }
+      for (const i of list) instances[i.id] = i;
       renderGrid();
+      updateStats();
     }
-  } catch (err) {
-    toast('Failed to load instances', 'error');
-  }
-
+  } catch { toast('Failed to load instances', 'error'); }
   connectWs();
 }
 

@@ -2,21 +2,26 @@
 # Baileys Web Panel — Docker Image
 # ============================================================================
 
-FROM node:20-alpine
+FROM node:20-slim
 
 WORKDIR /app
 
-# System dependencies
-RUN apk add --no-cache bash
-
-# Enable Yarn 4 via Corepack (required by Baileys root project)
-RUN corepack enable && corepack prepare yarn@4.9.2 --activate
+# System dependencies (needed for native modules like whatsapp-rust-bridge)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	bash \
+	ca-certificates \
+	&& rm -rf /var/lib/apt/lists/*
 
 # ---------------------------------------------------------------------------
 # Build Baileys (parent project)
 # ---------------------------------------------------------------------------
 COPY package.json yarn.lock .yarnrc.yml ./
-RUN yarn install
+
+# Enable Yarn 4 via Corepack
+RUN corepack enable \
+	&& corepack prepare yarn@4.9.2 --activate \
+	&& yarn --version \
+	&& yarn install
 
 COPY tsconfig.json tsconfig.build.json ./
 COPY src/ ./src/
